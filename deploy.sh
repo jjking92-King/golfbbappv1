@@ -38,12 +38,21 @@ echo -e "${GREEN}Current project:${NC} $PROJECT_ID"
 echo -e "${GREEN}App name:${NC} $APP_NAME"
 echo -e "${GREEN}Region:${NC} $REGION\n"
 
-# Ask for confirmation
-read -p "Deploy to Google Cloud Run? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Deployment cancelled${NC}"
-    exit 0
+# Check for --yes flag for automated deployment
+SKIP_CONFIRMATION=false
+if [[ "$1" == "--yes" ]] || [[ "$1" == "-y" ]]; then
+    SKIP_CONFIRMATION=true
+    echo -e "${YELLOW}Skipping confirmation (automated mode)${NC}\n"
+fi
+
+# Ask for confirmation (unless --yes flag is provided)
+if [ "$SKIP_CONFIRMATION" = false ]; then
+    read -p "Deploy to Google Cloud Run? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${YELLOW}Deployment cancelled${NC}"
+        exit 0
+    fi
 fi
 
 echo -e "\n${GREEN}Enabling required APIs...${NC}"

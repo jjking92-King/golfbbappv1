@@ -49,6 +49,20 @@ Google Cloud Run is a serverless platform that automatically scales your contain
 
 #### Deployment Steps
 
+**Option A: Using the deployment script (easiest)**
+
+1. **Run the deployment script:**
+   ```bash
+   ./deploy.sh
+   ```
+   
+   The script will guide you through the deployment process. For automated/CI deployments, use:
+   ```bash
+   ./deploy.sh --yes
+   ```
+
+**Option B: Manual deployment**
+
 1. **Set your Google Cloud project:**
    ```bash
    gcloud config set project YOUR_PROJECT_ID
