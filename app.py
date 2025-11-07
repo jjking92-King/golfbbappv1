@@ -9,7 +9,7 @@ app = Flask(__name__)
 def index():
     # Flask looks for templates inside the 'templates' directory
     # and renders your HTML file.
-    return render_template('golfbattlebuddyv1.html')
+    return render_template('golfbbappv1.html')
 
 # This block is used for local testing. 
 # Cloud Run automatically sets the correct port (8080) for deployment.
