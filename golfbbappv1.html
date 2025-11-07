@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golf Battle-Buddy</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .page-content { display: none; }
+        .page-content.active { display: block; }
+        .modal { display: none; position: fixed; z-index: 50; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal.is-open { display: flex; }
+    </style>
+</head>
+<body class="bg-gray-200">
+
+    <!-- Header -->
+    <header class="bg-green-900 text-white p-4 shadow-md">
+        <div class="container mx-auto max-w-2xl flex flex-col sm:flex-row justify-between items-center">
+            <h1 class="text-xl sm:text-2xl font-bold uppercase tracking-wide">Golf Battle-Buddy</h1>
+            <nav class="mt-2 sm:mt-0 flex items-center" aria-label="main navigation">
+                <button class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-green-800" data-page="tee-times" aria-label="Tee Times">Tee Times</button>
+                <button class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-green-800" data-page="calendar" aria-label="Calendar">Calendar</button>
+                <button class="nav-link px-3 py-2 rounded-md text-sm font-medium hover:bg-green-800" data-page="about" aria-label="About">About</button>
+                
+                <!-- Auth-related buttons -->
+                <div id="auth-container" class="ml-2">
+                    <button id="login-btn" class="px-3 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-500">Login</button>
+                    <div id="user-info" class="hidden items-center">
+                        <span id="user-welcome" class="text-sm font-medium mr-2"></span>
+                        <button id="logout-btn" class="px-3 py-2 rounded-md text-sm font-medium bg-red-600 hover:bg-red-500">Logout</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto max-w-2xl p-4">
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md min-h-[50vh]">
+            <!-- Tee Times (Default Page) -->
+            <section id="page-tee-times" class="page-content active">
+                <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Available Tee Times </h2>
+                
+                <!-- Login Prompt -->
+                <div id="login-prompt" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded-md" role="alert">
+                    <p>Please <button id="login-prompt-btn" class="font-bold underline hover:text-yellow-800">log in</button> to create or join a group.</p>
+                </div>
+
+                <!-- Create Tee Time Form -->
+                <form id="create-tee-time-form" class="bg-gray-100 p-4 rounded-lg shadow-inner mb-6 space-y-3 hidden" autocomplete="off">
+                    <h3 class="text-lg font-semibold text-gray-800">Create New Tee Time</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="player-name" class="block text-sm font-medium text-gray-700">Your Name</label>
+                            <input type="text" id="player-name" name="player-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-gray-200" required aria-required="true" readonly>
+                        </div>
+                        <div>
+                            <label for="player-skill" class="block text-sm font-medium text-gray-700">Your Skill</label>
+                            <select id="player-skill" name="player-skill" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" required aria-required="true">
+                                <option value="" disabled selected>Select skill</option>
+                                <option value="Beginner">Beginner +24</option>
+                                <option value="Intermediate">Intermediate +10-20</option>
+                                <option value="Advanced">Advanced 0 to +10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label for="tee-date" class="block text-sm font-medium text-gray-700">Date</label>
+                            <select id="tee-date" name="tee-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" required aria-required="true">
+                                <!-- Dates populated by JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tee-time" class="block text-sm font-medium text-gray-700">Time</label>
+                            <select id="tee-time" name="tee-time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" required aria-required="true">
+                                <option value="" disabled selected>Select a time</option>
+                                <!-- Times populated by JS -->
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Create Group
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div id="tee-times-list" class="space-y-4">
+                    <p class="text-center text-gray-500 p-4">Loading tee times...</p>
+                </div>
+            </section>
+            <!-- Calendar Section -->
+            <section id="page-calendar" class="page-content">
+                <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">Upcoming Events </h2>
+                <ul class="divide-y divide-gray-200" id="calendar-list">
+                    <!-- Events populated by JS -->
+                </ul>
+            </section>
+            <!-- About Section -->
+            <section id="page-about" class="page-content">
+                <h2 class="text-xl font-semibold text-gray-800 border-b pb-2 mb-4">About This App</h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>
+                        <strong>Golf Battle-Buddy</strong> This application was designed and developed by Jonathan King. As student, veteran and golf enthusiast, I saw a need for an easy to use tool for the local military community to use connect. With it being such a trasient community it can be hard to find a partner for a tee time especially with all the varing schedules. This app aims to fix that.
+
+
+                    </p>
+                    <p>
+                        This is a prototype to test the functionality. All data is for testing only and stored in your local browser.
+                    </p>
+                    <button id="donate-btn" class="w-full mt-6 px-4 py-2 bg-yellow-500 text-yellow-900 font-semibold rounded-md hover:bg-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2" aria-label="Donate">
+                        Future Donation Link
+                    </button>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <!-- Notice Modal -->
+    <div id="app-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message" tabindex="-1">
+        <div class="modal-content relative bg-white mx-auto p-6 rounded-lg shadow-lg w-11/12 max-w-md">
+            <h3 id="modal-title" class="text-lg font-semibold mb-2">Notice</h3>
+            <p id="modal-message" class="text-gray-700 mb-4">This is a modal message.</p>
+            <button id="modal-close-btn" class="w-full px-4 py-2 bg-green-700 text-white text-sm font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" aria-label="Close modal">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Join Group Modal -->
+    <div id="join-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="join-modal-title" tabindex="-1">
+        <div class="modal-content relative bg-white mx-auto p-6 rounded-lg shadow-lg w-11/12 max-w-md">
+            <form id="join-group-form" autocomplete="off">
+                <h3 id="join-modal-title" class="text-lg font-semibold mb-2">Join Group</h3>
+                <p id="join-group-info" class="text-gray-700 mb-4">You are joining...</p>
+                <input type="hidden" id="join-group-index">
+                <div class="space-y-3">
+                    <div>
+                        <label for="join-player-name" class="block text-sm font-medium text-gray-700">Your Name</label>
+                        <input type="text" id="join-player-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm bg-gray-200" required aria-required="true" readonly>
+                    </div>
+                    <div>
+                        <label for="join-player-skill" class="block text-sm font-medium text-gray-700">Your Skill</LabeL>
+                        <select id="join-player-skill" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" required aria-required="true">
+                            <option value="" disabled selected>Select skill</option>
+                            <option value="Beginner">Beginner +24</option>
+                            <option value="Intermediate">Intermediate +10-20</option>
+                            <option value="Advanced">Advanced 0 to +10</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3">
+                    <button type="button" id="join-modal-cancel" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-3 sm:mt-0">
+                        Cancel
+                    </button>
+                    <button type="submit" class="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-700 text-base font-medium text-white hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Join
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auth Modal (Login) -->
+    <div id="auth-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" tabindex="-1">
+        <div class="modal-content relative bg-white mx-auto p-6 rounded-lg shadow-lg w-11/12 max-w-md">
+            <form id="auth-form" autocomplete="off">
+                <h3 id="auth-modal-title" class="text-lg font-semibold mb-4 text-center">Login</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="auth-username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" id="auth-username" autocomplete="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" required>
+                    </div>
+                    <div>
+                        <label for="auth-password" class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="auth-password" autocomplete="current-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" required>
+                        <p class="mt-1 text-xs text-gray-500">Hint: This is a simulation. Any password will work.</p>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                     <button type="button" id="auth-modal-cancel" class="w-auto inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" id="auth-submit-btn" class="w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-500">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // --- App State ---
+        let TeeTimes = [];
+        let authUser = null; // { name: "John Doe", skill: "Beginner" }
+
+        // --- Date Helpers ---
+        // Use the user's current local date
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+        
+        const getMonthAbbr = (date) => date.toLocaleString('default', { month: 'short' });
+        const todayDateStr = `${getMonthAbbr(today)} ${today.getDate()}`; // e.g., "Nov 8"
+        const tomorrowDateStr = `${getMonthAbbr(tomorrow)} ${tomorrow.getDate()}`; // e.g., "Nov 9"
+        
+        // --- Persistent State Helpers (localStorage) ---
+        function loadTeeTimes() {
+            const stored = localStorage.getItem('TeeTimes');
+            let allTimes = [];
+            if (stored) {
+                allTimes = JSON.parse(stored);
+            }
+            
+            // Filter out old dates and add seed data if empty
+            let validTimes = allTimes.filter(t => t.date === todayDateStr || t.date === tomorrowDateStr);
+            
+            if (validTimes.length === 0 && !stored) { // Only add seed data if it's the very first load
+                 validTimes = [
+                    { date: todayDateStr, time: "08:00", slots: 4, players: [ { name: "Major. Slice", skill: "Advanced" }, { name: "Capt. Hook", skill: "Beginner" } ] },
+                    { date: todayDateStr, time: "09:00", slots: 2, players: [ { name: "Sgt. Eagle", skill: "Advanced" } ] },
+                    { date: tomorrowDateStr, time: "08:20", slots: 4, players: [ { name: "Fred. Miller", skill: "Intermediate" } ] }
+                ];
+            }
+            
+            TeeTimes = validTimes; // Update global state
+            saveTeeTimes(); // Re-save to clean out old dates
+        }
+        
+        function saveTeeTimes() {
+            TeeTimes.sort((a, b) => {
+                if (a.date < b.date) return -1;
+                if (a.date > b.date) return 1;
+                if (a.time < b.time) return -1;
+                if (a.time > b.time) return 1;
+                return 0;
+            });
+            localStorage.setItem('TeeTimes', JSON.stringify(TeeTimes));
+        }
+
+        async function addTeeTime(newTeeTime) {
+            const existing = TeeTimes.find(t => t.date === newTeeTime.date && t.time === newTeeTime.time);
+            if (existing) {
+                return { success: false, message: `A tee time for ${newTeeTime.time} on ${newTeeTime.date} already exists.` };
+            }
+            TeeTimes.push(newTeeTime);
+            saveTeeTimes();
+            return { success: true, message: `Your tee time for ${newTeeTime.time} on ${newTeeTime.date} has been created.` };
+        }
+
+        async function joinTeeTime(index, newPlayer) {
+            if (TeeTimes[index] && TeeTimes[index].players.length < TeeTimes[index].slots) {
+                TeeTimes[index].players.push(newPlayer);
+                saveTeeTimes();
+                return { success: true, message: "You have been added to this group. See you on the green!" };
+            }
+            return { success: false, message: "Could not join group. It might be full." };
+        }
+        
+        // --- Simple Auth Helpers (sessionStorage) ---
+        function loginUser(name, skill) {
+            authUser = { name: name, skill: skill || "Beginner" }; // Store skill on login
+            sessionStorage.setItem('golfUser', JSON.stringify(authUser));
+            updateUIForLoggedIn();
+        }
+        
+        function logoutUser() {
+            authUser = null;
+            sessionStorage.removeItem('golfUser');
+            updateUIForLoggedOut();
+        }
+        
+        function checkLoginState() {
+            const storedUser = sessionStorage.getItem('golfUser');
+            if (storedUser) {
+                authUser = JSON.parse(storedUser);
+                updateUIForLoggedIn();
+            } else {
+                authUser = null;
+                updateUIForLoggedOut();
+            }
+            loadTeeTimes(); // Load times *after* checking auth
+            renderTeeTimes(); // Initial render
+        }
+
+        // --- UI Update Functions ---
+        function updateUIForLoggedIn() {
+            document.getElementById('login-btn').classList.add('hidden');
+            document.getElementById('user-info').classList.remove('hidden');
+            document.getElementById('user-info').classList.add('flex');
+            document.getElementById('user-welcome').textContent = `Welcome, ${authUser.name}!`;
+            document.getElementById('login-prompt').classList.add('hidden');
+            document.getElementById('create-tee-time-form').classList.remove('hidden');
+            document.getElementById('player-name').value = authUser.name;
+            document.getElementById('player-skill').value = authUser.skill || "Beginner";
+            renderTeeTimes(); // Re-render to enable buttons
+        }
+        function updateUIForLoggedOut() {
+            document.getElementById('login-btn').classList.remove('hidden');
+            document.getElementById('user-info').classList.add('hidden');
+            document.getElementById('user-info').classList.remove('flex');
+            document.getElementById('login-prompt').classList.remove('hidden');
+            document.getElementById('create-tee-time-form').classList.add('hidden');
+            renderTeeTimes(); // Re-render to disable buttons
+        }
+
+        // Skill badge
+        function getSkillBadge(skill) {
+            const normSkill = String(skill).toLowerCase();
+            if (normSkill.includes('beginner')) {
+                return `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Beginner</span>`;
+            } else if (normSkill.includes('intermediate')) {
+                return `<span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded-full">Intermediate</span>`;
+            } else if (normSkill.includes('advanced')) {
+                return `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">Advanced</span>`;
+            } else {
+                return `<span class="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded-full">Unknown</span>`;
+            }
+        }
+
+        // --- Rendering Tee Times with indexed keys ---
+        function renderTeeTimes() {
+            const listElement = document.getElementById('tee-times-list');
+            if (!listElement) return;
+            listElement.innerHTML = '';
+            
+            const todayTimes = TeeTimes.filter(t => t.date === todayDateStr);
+            const tomorrowTimes = TeeTimes.filter(t => t.date === tomorrowDateStr);
+
+            function renderDayList(dayTitle, times, dateStr) {
+                let dayHtml = `<h3 class="text-lg font-semibold text-gray-700 mt-4 mb-2">${dayTitle}</h3>`;
+                if (times.length === 0) {
+                    dayHtml += `<p class="text-gray-500 text-sm italic">No tee times available for this day.</p>`;
+                    return dayHtml;
+                }
+                times.forEach((group) => {
+                    const globalIdx = TeeTimes.findIndex(t => t.date === group.date && t.time === group.time);
+                    const slotsLeft = group.slots - group.players.length;
+                    const playersHtml = group.players.length > 0 ?
+                        group.players.map(p =>
+                            `<li class="flex justify-between items-center py-1">
+                                <span>${p.name}</span>
+                                ${getSkillBadge(p.skill)}
+                            </li>`
+                        ).join('') :
+                        `<li class="text-gray-500 text-sm italic">No players joined yet.</li>`;
+                    
+                    const isFull = slotsLeft <= 0;
+                    const isLoggedIn = !!authUser;
+                    const alreadyJoined = isLoggedIn && group.players.some(p => p.name === authUser.name);
+                    const joinDisabled = isFull || !isLoggedIn || alreadyJoined;
+                    
+                    let btnText = "Login to Join";
+                    if (isLoggedIn) {
+                        btnText = alreadyJoined ? "Joined" : (isFull ? "Full" : "Join Group");
+                    }
+                    
+                    dayHtml += `
+                    <div class="border rounded-lg p-4 shadow-sm bg-gray-50 mb-4">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-3">
+                            <div>
+                                <h3 class="text-lg font-semibold text-green-900">${group.time}</h3>
+                                <p class="text-sm text-gray-600">${slotsLeft} of ${group.slots} slots available</p>
+                            </div>
+                            <button class="join-btn mt-2 sm:mt-0 px-4 py-2 ${joinDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-700 hover:bg-green-600'} text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                    data-group-index="${globalIdx}"
+                                    data-group-info="the ${group.time} group on ${group.date}"
+                                    aria-label="Join this group at ${group.time} on ${dateStr}"
+                                    ${joinDisabled ? 'disabled' : ''}>
+                                    ${btnText}
+                            </button>
+                        </div>
+                        <div class="border-t pt-2">
+                            <h4 class="font-semibold text-gray-700 text-sm mb-2">Players Joined:</h4>
+                            <ul class="space-y-1 text-sm text-gray-600">${playersHtml}</ul>
+                        </div>
+                    </div>`
+                });
+                return dayHtml;
+            }
+            listElement.innerHTML += renderDayList(`Today, ${todayDateStr}`, todayTimes, todayDateStr);
+            listElement.innerHTML += renderDayList(`Tomorrow, ${tomorrowDateStr}`, tomorrowTimes, tomorrowDateStr);
+        }
+
+        // --- Modals (accessible) ---
+        const modal = document.getElementById('app-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const closeModalBtn = document.getElementById('modal-close-btn');
+        let lastFocusedElement = null;
+
+        function showModal(title, message) {
+            lastFocusedElement = document.activeElement;
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = "hidden";
+            closeModalBtn.focus();
+        }
+        function closeModal() {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = "";
+            if (lastFocusedElement) lastFocusedElement.focus();
+        }
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'Tab') { e.preventDefault(); closeModalBtn.focus(); }
+        });
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Join Group Modal
+        const joinModal = document.getElementById('join-modal');
+        const joinModalForm = document.getElementById('join-group-form');
+        const joinModalInfo = document.getElementById('join-group-info');
+        const joinModalIndexInput = document.getElementById('join-group-index');
+        const joinModalNameInput = document.getElementById('join-player-name');
+        const joinModalSkillSelect = document.getElementById('join-player-skill');
+        const joinModalCancelBtn = document.getElementById('join-modal-cancel');
+        let joinModalLastFocus = null;
+
+        function showJoinModal(index, info) {
+            joinModalLastFocus = document.activeElement;
+            joinModalInfo.textContent = `You are joining ${info}.`;
+            joinModalIndexInput.value = index;
+            joinModalForm.reset(); 
+            joinModalNameInput.value = authUser.name; // Auto-fill name
+            joinModalSkillSelect.value = authUser.skill || "Beginner"; // Auto-fill skill
+            
+            joinModal.classList.add('is-open');
+            joinModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = "hidden";
+            joinModalSkillSelect.focus();
+        }
+        function hideJoinModal() {
+            joinModal.classList.remove('is-open');
+            joinModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = "";
+            if (joinModalLastFocus) joinModalLastFocus.focus();
+        }
+        joinModal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideJoinModal();
+        });
+        joinModalCancelBtn.addEventListener('click', hideJoinModal);
+        joinModal.addEventListener('click', (e) => {
+            if (e.target === joinModal) hideJoinModal();
+        });
+
+        // Auth Modal
+        const authModal = document.getElementById('auth-modal');
+        const authModalForm = document.getElementById('auth-form');
+        const authModalCancelBtn = document.getElementById('auth-modal-cancel');
+        const authUsernameInput = document.getElementById('auth-username');
+        const authPasswordInput = document.getElementById('auth-password');
+        let authModalLastFocus = null;
+        
+        function showAuthModal() {
+            authModalLastFocus = document.activeElement;
+            authModalForm.reset();
+            authModal.classList.add('is-open');
+            authModal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = "hidden";
+            authUsernameInput.focus();
+        }
+        function hideAuthModal() {
+            authModal.classList.remove('is-open');
+            authModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = "";
+            if (authModalLastFocus) authModalLastFocus.focus();
+        }
+        authModal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideAuthModal();
+        });
+        authModalCancelBtn.addEventListener('click', hideAuthModal);
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) hideAuthModal();
+        });
+        authModalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = authUsernameInput.value;
+            // No password check needed for simulation
+            if (username && username.trim() !== "") {
+                loginUser(username.trim(), "Beginner"); // Log in with a default skill
+                hideAuthModal();
+            } else {
+                showModal("Login Failed", "Please enter a username.");
+            }
+        });
+
+
+        // --- Page load setup ---
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Populate Date Select
+            function populateDateSelect() {
+                const dateSelect = document.getElementById('tee-date');
+                if (!dateSelect) return;
+                dateSelect.innerHTML = `
+                    <option value="${todayDateStr}">Today, ${todayDateStr}</option>
+                    <option value="${tomorrowDateStr}">Tomorrow, ${tomorrowDateStr}</option>
+                `;
+            }
+            
+            // Populate time select
+            function populateTimeSelect() {
+                const timeSelect = document.getElementById('tee-time');
+                if (!timeSelect) return;
+                timeSelect.innerHTML = '<option value="" disabled selected>Select a time</option>';
+                for (let minutes = 7 * 60; minutes <= 15 * 60 + 20; minutes += 20) {
+                    const h = String(Math.floor(minutes / 60)).padStart(2, '0');
+                    const m = String(minutes % 60).padStart(2, '0');
+                    const timeStr = `${h}:${m}`;
+                    const option = document.createElement('option');
+                    option.value = timeStr;
+                    option.textContent = timeStr;
+                    timeSelect.appendChild(option);
+                }
+            }
+
+            // Populate Calendar
+            function populateCalendar() {
+                const calendarList = document.getElementById('calendar-list');
+                if (!calendarList) return;
+                // Add dynamic events based on "tomorrow"
+                const events = [
+                    { date: tomorrowDateStr, event: "Sunday Skins Game" },
+                    { date: "Nov 11", event: "Veterans Day Scramble" },
+                    { date: "Nov 15", event: "Turkey Shootout" },
+                    { date: "Nov 16", event: "Weekly Skins Game" }
+                ];
+                
+                let eventsHtml = "";
+                events.forEach(item => {
+                    eventsHtml += `<li class="py-3"><strong class="text-green-800">${item.date}:</strong> ${item.event}</li>`;
+                });
+                calendarList.innerHTML = eventsHtml;
+            }
+
+            populateDateSelect();
+            populateTimeSelect();
+            populateCalendar();
+            
+            // --- Attach Listeners ---
+            document.getElementById('login-btn').addEventListener('click', showAuthModal);
+            document.getElementById('login-prompt-btn').addEventListener('click', showAuthModal);
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                logoutUser();
+                showModal("Logged Out", "You have been logged out.");
+            });
+
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const pageId = e.target.dataset.page;
+                    if (pageId) {
+                        showPage('page-' + pageId);
+                        document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('bg-green-800'));
+                        e.target.classList.add('bg-green-800');
+                    }
+                });
+            });
+            document.querySelector('.nav-link[data-page="tee-times"]').classList.add('bg-green-800');
+
+            // Create Tee Time form
+            const createForm = document.getElementById('create-tee-time-form');
+            if (createForm) {
+                createForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const player = {
+                        name: document.getElementById('player-name').value,
+                        skill: document.getElementById('player-skill').value
+                    };
+                    const teeDate = document.getElementById('tee-date').value;
+                    const teeTime = document.getElementById('tee-time').value;
+                    
+                    if (!player.name || !player.skill || !teeDate || !teeTime) {
+                        showModal('Error', 'Please fill out all fields to create a tee time.');
+                        return;
+                    }
+                    
+                    const result = await addTeeTime({
+                        date: teeDate,
+                        time: teeTime,
+                        slots: 4,
+                        players: [ player ]
+                    });
+                    
+                    if (result.success) {
+                        renderTeeTimes();
+                        createForm.reset();
+                        document.getElementById('player-name').value = authUser.name;
+                        document.getElementById('player-skill').value = authUser.skill || "Beginner";
+                        document.getElementById('tee-time').selectedIndex = 0;
+                        showModal('Success!', result.message);
+                    } else {
+                        showModal('Error', result.message);
+                    }
+                });
+            }
+
+            // Modal: Donate
+            document.getElementById('donate-btn').addEventListener('click', () => {
+                showModal('Donations', 'Thank you for your interest! The donation system is not yet active. Please check back later.');
+            });
+
+            // Handle Join Group Form Submit
+            joinModalForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const index = Number(joinModalIndexInput.value);
+                const player = {
+                    name: joinModalNameInput.value,
+                    skill: joinModalSkillSelect.value
+                };
+                
+                if (!player.name || !player.skill) {
+                    showModal('Error', 'Please enter your name and select a skill.');
+                    return;
+                }
+                
+                // Update authUser skill for next time
+                if (authUser) authUser.skill = player.skill;
+                sessionStorage.setItem('golfUser', JSON.stringify(authUser));
+
+                const result = await joinTeeTime(index, player);
+                
+                hideJoinModal();
+                if (result.success) {
+                    renderTeeTimes();
+                    showModal('Group Joined', result.message);
+                } else {
+                    showModal('Error', result.message);
+                }
+            });
+
+            // --- Tee Time "join group" (delegated listener) ---
+            document.getElementById('tee-times-list').addEventListener('click', (e) => {
+                const joinButton = e.target.closest('.join-btn');
+                if (joinButton && !joinButton.disabled) {
+                    const idx = Number(joinButton.getAttribute('data-group-index'));
+                    const info = joinButton.getAttribute('data-group-info');
+                    showJoinModal(idx, info);
+                }
+            });
+            
+            // --- Page switching utility ---
+            function showPage(pageId) {
+                document.querySelectorAll('.page-content').forEach(page => {
+                    page.classList.remove('active');
+                });
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) targetPage.classList.add('active');
+            }
+            
+            // --- Initial Load ---
+            showPage('page-tee-times');
+            checkLoginState(); // Check auth state, load data, and render
+        });
+    </script>
+</body>
+</html>
