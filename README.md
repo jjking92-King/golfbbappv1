@@ -90,6 +90,36 @@ golfbbappv1/
 
 The application runs in debug mode by default when using `python app.py`. For production deployments, use Gunicorn or another production WSGI server.
 
+## Testing
+
+The application includes a comprehensive test suite using pytest.
+
+### Running Tests
+
+1. Install test dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+2. Run all tests:
+```bash
+pytest test_app.py -v
+```
+
+3. Run tests with coverage report:
+```bash
+pytest test_app.py --cov=app --cov-report=term-missing -v
+```
+
+### Test Coverage
+
+The test suite includes:
+- **20 comprehensive tests** covering routes, templates, configuration, and HTTP methods
+- **86% code coverage** of the application code
+- **100% pass rate** - all tests passing
+
+See [TEST_RESULTS.md](TEST_RESULTS.md) for detailed test results and coverage information.
+
 ## License
 
 This project is available for personal and educational use.
