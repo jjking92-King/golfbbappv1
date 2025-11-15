@@ -57,11 +57,30 @@ gunicorn app:app --bind 0.0.0.0:8080
 
 ### Using Heroku
 
-The application includes a `Procfile` for easy Heroku deployment:
+The application is fully configured for Heroku deployment with:
+- `Procfile` - Defines the web process using Gunicorn
+- `runtime.txt` - Specifies Python 3.12.3
+- `requirements.txt` - Production dependencies only (Flask, Gunicorn)
+- `app.json` - App metadata for Heroku
 
+#### Deploy to Heroku
+
+1. Create a Heroku app:
+```bash
+heroku create your-app-name
+```
+
+2. Deploy:
 ```bash
 git push heroku main
 ```
+
+3. Open your app:
+```bash
+heroku open
+```
+
+The app will automatically use the correct port assigned by Heroku through the `$PORT` environment variable.
 
 ### Using Google Cloud Run
 
@@ -71,12 +90,19 @@ The application is configured to work with containerized environments like Cloud
 
 ```
 golfbbappv1/
-├── app.py                 # Flask application entry point
-├── requirements.txt       # Python dependencies
-├── Procfile              # Heroku deployment configuration
-├── templates/            # HTML templates
-│   └── golfbbappv1.html # Main application template
-└── README.md            # This file
+├── app.py                  # Flask application entry point
+├── requirements.txt        # Production dependencies (Flask, Gunicorn)
+├── requirements-dev.txt    # Development dependencies (includes pytest)
+├── Procfile               # Heroku web process configuration
+├── runtime.txt            # Python version for Heroku
+├── app.json               # Heroku app metadata
+├── pytest.ini             # Pytest configuration
+├── test_app.py            # Test suite (20 comprehensive tests)
+├── .gitignore             # Git ignore rules
+├── templates/             # HTML templates
+│   └── golfbbappv1.html  # Main application template
+├── TEST_RESULTS.md        # Detailed test results and coverage
+└── README.md              # This file
 ```
 
 ## Usage
@@ -89,6 +115,46 @@ golfbbappv1/
 ## Development
 
 The application runs in debug mode by default when using `python app.py`. For production deployments, use Gunicorn or another production WSGI server.
+
+### Development Setup
+
+For local development with testing capabilities:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+This installs both production dependencies (Flask, Gunicorn) and development/testing dependencies (pytest, pytest-cov).
+
+## Testing
+
+The application includes a comprehensive test suite using pytest.
+
+### Running Tests
+
+1. Install development dependencies (includes test dependencies):
+```bash
+pip install -r requirements-dev.txt
+```
+
+2. Run all tests:
+```bash
+pytest test_app.py -v
+```
+
+3. Run tests with coverage report:
+```bash
+pytest test_app.py --cov=app --cov-report=term-missing -v
+```
+
+### Test Coverage
+
+The test suite includes:
+- **20 comprehensive tests** covering routes, templates, configuration, and HTTP methods
+- **86% code coverage** of the application code
+- **100% pass rate** - all tests passing
+
+See [TEST_RESULTS.md](TEST_RESULTS.md) for detailed test results and coverage information.
 
 ## License
 
