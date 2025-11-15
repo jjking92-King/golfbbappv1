@@ -168,6 +168,11 @@ The Golf Battle-Buddy application has excellent test coverage and all tests pass
 
 ## Running the Tests
 
+### Install Development Dependencies
+```bash
+pip install -r requirements-dev.txt
+```
+
 ### Run All Tests
 ```bash
 pytest test_app.py -v
